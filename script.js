@@ -10,7 +10,7 @@ const weight_rows = weight_tbody.querySelectorAll('tr');
 // Get the rows from the Assignment Grades Table
 const course_table = document.querySelector('#grades_summary');
 const course_tbody = course_table.querySelector('tbody');
-const course_rows = course_tbody.querySelectorAll('tr.student_assignment.assignment_graded');
+const course_rows = course_tbody.querySelectorAll('tr.student_assignment.assignment_graded:not(.dropped)');
 
 weight_rows.forEach((row) => {
     const group = row.querySelector('th').textContent;
@@ -26,13 +26,23 @@ course_rows.forEach((row) => {
     const group = th.querySelector('.context').textContent;
 
     const tooltip = row.querySelector('.tooltip').innerText;
-    grade = tooltip.match(/\d+((.\d+)?)/g);
-    scores[`${group}`][0] += Number(grade[0]);
-
-    if (grade[1]) {
+    //const grade = tooltip.match(/\d+((.\d+)?)/g);
+    if (grade = tooltip.match(/\d+((.\d+)?)/g)) {
+        scores[`${group}`][0] += Number(grade[0]);
+    
+        if (grade[1]) {
+            scores[`${group}`][1] += Number(grade[1]);
+        } else {
+            scores[`${group}`][1] += 100;
+        }
+    } else if (grade = tooltip.match(/Complete$/)) {
+        const id = row.id.match(/[^submission_]\d+/)[0];
+        const score_details = document.getElementById(`score_details_${id}`);
+        grade[0] = score_details.textContent.match(/Your Score:\s*(\d+(\.\d+)?)/)[1];
+        grade[1] = score_details.textContent.match(/out of\s*(\d+(\.\d+)?)/)[1];
+        
+        scores[`${group}`][0] += Number(grade[0]);
         scores[`${group}`][1] += Number(grade[1]);
-    } else {
-        scores[`${group}`][1] += 100;
     }
 });
 
@@ -50,5 +60,4 @@ console.log(total_score.toFixed(2) + '%');
 // Next Steps:
 //      -Find a way to account for inputted scores
 //          (remove use of 'tr.assignment_graded')
-//      -Account for checkmarks and non-scores
 //      -Account for no Weight Table
