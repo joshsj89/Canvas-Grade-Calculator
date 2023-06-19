@@ -1,6 +1,7 @@
 const weight = {};
 const scores = {};
 let total_score = 0;
+let total_weight = 0;
 
 // Get the rows from the Weight Table
 const weight_table = document.querySelector('table.summary');
@@ -12,21 +13,21 @@ const course_table = document.querySelector('#grades_summary');
 const course_tbody = course_table.querySelector('tbody');
 const course_rows = course_tbody.querySelectorAll('tr.student_assignment.assignment_graded:not(.dropped)');
 
+// Get the weight percentage for each group
 weight_rows.forEach((row) => {
     const group = row.querySelector('th').textContent;
     if (group !== 'Total') {
-        // get the percentage multiplier for all groups
-        weight[`${group}`] = Number(row.querySelector('td').textContent.match(/\d+/)[0])/* * 0.01*/;
+        weight[`${group}`] = Number(row.querySelector('td').textContent.match(/\d+/)[0]);
         scores[`${group}`] = [0, 0];
     }
 });
 
+// Get the assignment percentages
 course_rows.forEach((row) => {
     const th = row.querySelector('th');
     const group = th.querySelector('.context').textContent;
 
     const tooltip = row.querySelector('.tooltip').innerText;
-    //const grade = tooltip.match(/\d+((.\d+)?)/g);
     if (grade = tooltip.match(/\d+((.\d+)?)/g)) {
         scores[`${group}`][0] += Number(grade[0]);
     
@@ -46,12 +47,20 @@ course_rows.forEach((row) => {
     }
 });
 
+// Total Calculation
+
 for (const key in weight) {
     const points = scores[`${key}`][0];
     const total = scores[`${key}`][1];
     if (total !== 0) {
         total_score += points / total * weight[`${key}`];
+        total_weight += weight[`${key}`];
     }
+}
+
+// If not every group has an assignment (i.e. total weight is not 100%)
+if (total_weight !== 100) {
+    total_score /= total_weight * 0.01;
 }
 
 console.log(total_score.toFixed(2) + '%');
